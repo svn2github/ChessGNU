@@ -28,5 +28,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/lib
 
 AM_LDFLAGS = $(PTHREAD_LDFLAGS) $(PTHREAD_LIBS)
 
+if HAVE_GUILE
+AM_CPPFLAGS += `guile-config compile` -DHAVE_GUILE
+AM_LDFLAGS += `guile-config link`
+endif
+
 DISTCLEANFILES = *~
 

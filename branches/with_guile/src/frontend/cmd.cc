@@ -849,7 +849,11 @@ void cmd_usermove(void)
 void cmd_version(void)
 {
    if (!(flags & XBOARD))
+#ifdef HAVE_GUILE
+     printf ("%s %s (GUILE enabled)\n", PROGRAM, VERSION);
+#else
      printf ("%s %s\n", PROGRAM, VERSION);
+#endif
    else
      printf ("Chess\n");
 }

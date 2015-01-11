@@ -1,5 +1,11 @@
 2015-01-11  Antonio Ceballos  <aceballos@gmail.com>
 
+	* src/frontend/Makefile.am: compile with HAVE_GUILE.
+	* src/frontend/cmd.cc: show 'GUILE enabled' with version info,
+	if HAVE_GUILE is defined.
+
+2015-01-11  Antonio Ceballos  <aceballos@gmail.com>
+
 	* configure.ac: set version 6.2.1a; --enable-guile.
 	* src/Makefile.am: compile with HAVE_GUILE.
 	* src/main.cc: use precompilation directive HAVE_GUILE.
