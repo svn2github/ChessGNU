@@ -10,7 +10,7 @@ dnl This program is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_INIT([GNU Chess], [6.2.1], [bug-gnu-chess@gnu.org], [gnuchess])
+AC_INIT([GNU Chess], [6.2.1a], [bug-gnu-chess@gnu.org], [gnuchess])
 AC_PREREQ(2.69)
 AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_SRCDIR([src/main.cc])
@@ -95,6 +95,23 @@ AC_ARG_WITH([pluginsdir],
             [PLUGINSDIR='$(datadir)/games/plugins'])
 
 AC_SUBST(PLUGINSDIR)
+
+dnl AC_ARG_ENABLE(guile,
+dnl AC_HELP_STRING([--enable-guile],[Enable Guile support [[default=no]]]),
+dnl [case $enableval in
+dnl yes|no) ;;
+dnl ") AC_MSG_ERROR([bad value $enableval for --enable-guile, need yes or no])  ;;
+dnl esac],
+dnl [enable_guile=false])
+AC_ARG_ENABLE(guile,
+  [  --enable-guile    Enable Guile support [default=false]],
+  [case "${enableval}" in
+     yes | y) guile=true ;;
+     no | n)  guile=false ;;
+     *) AC_MSG_ERROR(bad value ${enableval} for --enable-guile) ;;
+   esac],[guile=false])
+
+AM_CONDITIONAL([HAVE_GUILE], [test x$guile = xtrue])
 
 AC_CONFIG_FILES(Makefile src/Makefile src/frontend/Makefile src/adapter/Makefile src/engine/Makefile doc/Makefile po/Makefile.in man/Makefile)
 AC_OUTPUT

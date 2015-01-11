@@ -1,3 +1,15 @@
+2015-01-11  Antonio Ceballos  <aceballos@gmail.com>
+
+	* configure.ac: set version 6.2.1a; --enable-guile.
+	* src/Makefile.am: compile with HAVE_GUILE.
+	* src/main.cc: use precompilation directive HAVE_GUILE.
+	* src/guile.cc: basic GUILE functions.
+	* src/script.scm: basic SCHEME script.
+
+2015-01-11  Antonio Ceballos  <aceballos@gmail.com>
+
+	* Merge from trunk (delta 6.2.0 -> 6.2.1).
+
 2015-01-04  Antonio Ceballos  <aceballos@gmail.com>
 
 	* NEWS: changes in version 6.2.1.

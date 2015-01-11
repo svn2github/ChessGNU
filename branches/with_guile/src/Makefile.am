@@ -29,6 +29,13 @@ AM_LDFLAGS = $(PTHREAD_LDFLAGS) $(PTHREAD_LIBS)
 localedir = $(datadir)/locale
 
 AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib
+
+if HAVE_GUILE
+gnuchess_SOURCES += guile.cc
+AM_CPPFLAGS += `guile-config compile` -DHAVE_GUILE
+AM_LDFLAGS += `guile-config link`
+endif
+
 DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 
 DISTCLEANFILES = *~

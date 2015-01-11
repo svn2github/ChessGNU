@@ -212,6 +212,10 @@ int Mask315[64] =
 
 extern char userinputbuf[];
 
+#ifdef HAVE_GUILE
+void guile_hello(void);
+#endif
+
 int main (int argc, char *argv[])
 {
   int i;
@@ -375,6 +379,11 @@ int main (int argc, char *argv[])
 	return(0);
 
   /* Startup output */
+#ifdef HAVE_GUILE
+        guile_hello();
+#else
+        printf("GUILE not enabled; install with './configure --enable-guile'.\n");
+#endif
   if ( !( flags & XBOARD ) && ( !opt_quiet ) && ( !opt_uci) ) {
     printf( "Copyright (C) 2015 Free Software Foundation, Inc.\n" );
     printf( "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
