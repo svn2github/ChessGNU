@@ -2,7 +2,7 @@
 
    GNU Chess engine
 
-   Copyright (C) 2001-2011 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,10 +22,6 @@
 // board.cpp
 
 // includes
-
-#ifdef HAVE_GUILE
-#include <libguile.h>
-#endif
 
 #include "attack.h"
 #include "board.h"
@@ -537,88 +533,6 @@ int board_endgame(const board_t * board) {
 
    return endgame;
 }
-
-#ifdef HAVE_GUILE
-
-extern SCM eval_builtin(/*SCM board*/);
-
-// As the size is fixed, assume no initialization is needed.
-static SCM
-make_board_t (SCM name)
-{
-  SCM smob;
-  struct board_t *board_t;
-
-  /* Step 1: Allocate the memory block.
-   */
-  board_t = (struct board_t *) scm_gc_malloc (sizeof (struct board_t), "board_t");
-
-  /* Step 2: Initialize it with straight code.
-   */
-
-  /* Step 3: Create the smob.
-   */
-  SCM_NEWSMOB (smob, board_t_tag, board_t);
-
-  /* Step 4: Finish the initialization.
-   */
-  board_t->name = name;
-
-  return smob;
-}
-
-SCM
-clear_board_t (SCM board_t_smob)
-{
-  ///int area;
-  struct board_t *board_t;
-
-  scm_assert_smob_type (board_t_tag, board_t_smob);
-
-  board_t = (struct board_t *) SCM_SMOB_DATA (board_t_smob);
-  ///area = board_t->width * board_t->height;
-  ///memset (board_t->pixels, 0, area);
-
-  /* Invoke the board_t's update function.
-   */
-  if (scm_is_true (board_t->update_func))
-    scm_call_0 (board_t->update_func);
-
-  scm_remember_upto_here_1 (board_t_smob);
-
-  return SCM_UNSPECIFIED;
-}
-
-static int
-print_board_t (SCM board_t_smob, SCM port, scm_print_state *pstate)
-{
-  struct board_t *board_t = (struct board_t *) SCM_SMOB_DATA (board_t_smob);
-
-  scm_puts ("#<board_t ", port);
-  scm_display (board_t->name, port);
-  scm_puts (">", port);
-
-  /* non-zero means success */
-  return 1;
-}
-
-void
-init_board_t_type (void)
-{
-  board_t_tag = scm_make_smob_type ("board_t", sizeof (struct board_t));
-  scm_set_smob_print (board_t_tag, print_board_t);
-
-  scm_c_define_gsubr ("clear-board_t", 1, 0, 0, (void*)clear_board_t);
-  scm_c_define_gsubr ("make-board_t", 1, 0, 0, (void*)make_board_t);
-  //scm_c_define_gsubr ("eval-builtin", 1, 0, 0, (void*)eval_builtin);
-}
-
-// TODO: there are more functions in the manual: mark and free
-
-#warning "SI GUILE"
-#else
-#warning "NO GUILE"
-#endif
 
 }  // namespace engine
 

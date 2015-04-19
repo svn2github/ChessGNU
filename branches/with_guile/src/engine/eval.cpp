@@ -2,7 +2,7 @@
 
    GNU Chess engine
 
-   Copyright (C) 2001-2011 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 // includes
 
 #include <cstdlib> // for abs()
+#ifdef HAVE_GUILE
+#include <libguile.h>
+#endif
 
 #include "attack.h"
 #include "board.h"
@@ -230,13 +233,10 @@ void eval_init() {
 // eval()
 
 #ifdef HAVE_GUILE
-#include <libguile.h>
-
 const board_t * board_tmp;
 
 SCM
 eval_builtin(void) {
-//eval_builtin(/*SCM guile_board*/SCM dummy) {
 #else
 int eval(const board_t * board) {
 #endif
@@ -244,7 +244,6 @@ int eval(const board_t * board) {
 #ifdef HAVE_GUILE
    const board_t * board;
    board = board_tmp;
-   /*board = SCM_SMOB_DATA(guile_board);*/
 #endif
 
    int opening, endgame;
@@ -353,10 +352,6 @@ int eval(const board_t * board) {
 }
 
 #ifdef HAVE_GUILE
-int eval_guile(/*const board_t *board*/ ) {
-   return 0;
-}
-
 SCM func_eval_guile;
 
 typedef scm_t_subr FN;
@@ -365,7 +360,6 @@ int eval(const board_t * board) {
    /* Save parameter in global variable, because Guile counterpart has no
       parameter. */
    board_tmp = board;
-   //return eval_guile( /*board*/ );
 
     SCM func_symbol;
     SCM func;

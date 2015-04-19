@@ -2,7 +2,7 @@
 
    GNU Chess engine
 
-   Copyright (C) 2001-2011 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,10 +25,6 @@
 #define BOARD_H
 
 // includes
-
-#ifdef HAVE_GUILE
-#include <libguile.h>
-#endif
 
 #include "colour.h"
 #include "piece.h"
@@ -70,10 +66,6 @@ const int StackSize = 4096;
 
 // types
 
-#ifdef HAVE_GUILE
-static scm_t_bits board_t_tag;
-#endif
-
 struct board_t {
 
    int square[SquareNb];
@@ -106,16 +98,6 @@ struct board_t {
    uint64 material_key;
 
    uint64 stack[StackSize];
-
-#ifdef HAVE_GUILE
-  /* The name of this board_t */
-  SCM name;
-
-  /* A function to call when this board_t is
-     modified, e.g., to update the screen,
-     or SCM_BOOL_F if no action necessary */
-  SCM update_func;
-#endif
 };
 
 // functions

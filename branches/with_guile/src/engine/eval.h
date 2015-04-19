@@ -2,7 +2,7 @@
 
    GNU Chess engine
 
-   Copyright (C) 2001-2011 Free Software Foundation, Inc.
+   Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,9 @@
 
 // includes
 
+#ifdef HAVE_GUILE
+#include <libguile.h>
+#endif
 #include "board.h"
 #include "util.h"
 
