@@ -9,19 +9,24 @@ TODO of GNU Chess
 This TODO list is specifically intended to include tasks related to
 the 'with_guile' branch.
 
-* Modify int eval(const board_t * board) in src/engine/eval.cpp in the
-following way:
+Without Guile                           With Guile
+--------------------------------------------------------------------------------
+                                        const board_t *board_tmp;
+int eval( board_t *board )              SCM eval_builtin( void )
+{                                       {
+                                          const board_t *board = board_tmp;
+  // ...                                  // ...
+  return eval;                            return scm_from_int( eval );
+}                                       }
+                                        int eval( board_t *board )
+                                        {
+                                          board_tmp = board;
+                                          int ret_val;
+                                          ret_val = scm_call_0( func_eval_guile );
+                                          return scm_num2int( ret_val, 0, NULL );
+                                        }
+--------------------------------------------------------------------------------
 
-1. Copy eval() to eval_builtin().
-2. Define eval_guile(board) (SCHEME) in script.scm.
-3. Implementation of eval(): call eval_guile().
-4. Implementation of eval_guile(): call eval_builtin().
-
-All that requires a type board_t exchangable between SCHEME and C++.
-
-Hint: Guile manual, section 5.7.1 How One Might Extend Dia Using Guile
-
-1. How to represent data in Scheme: board_t.
-2. Writing Guile primitives: eval_builtin().
-3. Hook for the evaluation of Scheme code: eval() -> eval_guile().
-4. Top-level structure of Guile-enabled GNU Chess.
+Next steps:
+* Split eval_builtin into several primitives available from Guile, each
+returning partial evaluation: material, patterns, etc.

@@ -39,7 +39,7 @@ namespace engine {
 extern void eval_init ();
 
 #ifdef HAVE_GUILE
-//extern SCM eval_builtin(/*SCM board*/void);
+extern SCM eval_builtin( void );
 
 extern SCM func_eval_guile;
 #endif

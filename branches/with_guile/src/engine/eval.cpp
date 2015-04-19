@@ -236,14 +236,14 @@ void eval_init() {
 const board_t * board_tmp;
 
 SCM
-eval_builtin(void) {
+eval_builtin( void ) {
 #else
 int eval(const board_t * board) {
 #endif
 
 #ifdef HAVE_GUILE
-   const board_t * board;
-   board = board_tmp;
+   const board_t * board = board_tmp;
+   //board = board_tmp;
 #endif
 
    int opening, endgame;

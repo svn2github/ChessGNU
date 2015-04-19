@@ -1,3 +1,13 @@
+2015-04-19  Antonio Ceballos  <aceballos@gmail.com>
+
+	* src/engine/eval.cpp: add eval-guile function and eval-builtin
+	primitive.
+	* src/engine/eval.h: add eval-guile function and eval-builtin
+	primitive.
+	* src/script.scm: add eval-guile function, which calls
+	eval-builtin.
+	* TODO: update tasks.
+
 2015-01-11  Antonio Ceballos  <aceballos@gmail.com>
 
 	* src/frontend/Makefile.am: compile with HAVE_GUILE.

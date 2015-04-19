@@ -7,7 +7,6 @@
 
 using engine::board_t;
 
-
 void guile_hello(void)
 {
     printf("GUILE enabled hello...\n");
@@ -17,7 +16,7 @@ void guile_hello(void)
 
     scm_init_guile();
 
-//    scm_c_define_gsubr( "eval_builtin", 0, 0, 0, engine::eval_builtin );
+    scm_c_define_gsubr( "eval_builtin", 0, 0, 0, (void*)engine::eval_builtin );
 
     // Load the scheme function definition
     scm_c_primitive_load( "script.scm" );
@@ -33,8 +32,8 @@ void guile_hello(void)
     SCM text = scm_from_locale_string( "GUILE integration in GNU Chess" );
     scm_call_1( func, text );
 
-//    func_symbol = scm_c_lookup( "eval-guile" );
-//    engine::func_eval_guile = scm_variable_ref( func_symbol );
+   // func_symbol = scm_c_lookup( "eval-guile" );
+   // engine::func_eval_guile = scm_variable_ref( func_symbol );
 
     return;
 }
