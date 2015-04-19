@@ -229,7 +229,23 @@ void eval_init() {
 
 // eval()
 
+#ifdef HAVE_GUILE
+#include <libguile.h>
+
+const board_t * board_tmp;
+
+SCM
+eval_builtin(void) {
+//eval_builtin(/*SCM guile_board*/SCM dummy) {
+#else
 int eval(const board_t * board) {
+#endif
+
+#ifdef HAVE_GUILE
+   const board_t * board;
+   board = board_tmp;
+   /*board = SCM_SMOB_DATA(guile_board);*/
+#endif
 
    int opening, endgame;
    material_info_t mat_info[1];
@@ -329,8 +345,49 @@ int eval(const board_t * board) {
 
    ASSERT(!value_is_mate(eval));
 
+#ifdef HAVE_GUILE
+   return scm_from_int( eval );
+#else
    return eval;
+#endif
 }
+
+#ifdef HAVE_GUILE
+int eval_guile(/*const board_t *board*/ ) {
+   return 0;
+}
+
+SCM func_eval_guile;
+
+typedef scm_t_subr FN;
+
+int eval(const board_t * board) {
+   /* Save parameter in global variable, because Guile counterpart has no
+      parameter. */
+   board_tmp = board;
+   //return eval_guile( /*board*/ );
+
+    SCM func_symbol;
+    SCM func;
+
+    scm_init_guile();
+
+    scm_c_define_gsubr( "eval_builtin", 0, 0, 0, (void*)eval_builtin );
+
+    // Load the scheme function definition
+    scm_c_primitive_load( "script.scm" );
+
+    func_symbol = scm_c_lookup( "eval-guile" );
+    func_eval_guile = scm_variable_ref( func_symbol );
+
+   SCM ret_val;
+   int result=0;
+   ret_val = scm_call_0( func_eval_guile );
+   //ret_val = scm_call_1( func_eval_guile, scm_int2num(0) );
+   result = scm_num2int( ret_val, 0, NULL );
+   return result;
+}
+#endif
 
 // eval_draw()
 

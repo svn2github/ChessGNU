@@ -7,3 +7,9 @@
   (lambda (text)
     (display text)
       (newline)))
+
+(define eval-guile
+  (lambda ()
+    (begin (eval_builtin))
+  )
+)
