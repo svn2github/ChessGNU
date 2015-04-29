@@ -1,5 +1,11 @@
 2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
 
+	* src/script.scm: renamed as src/eval.scm.
+	* src/eval.scm: renamed from src/script.scm.
+	* src/guile.cc: renamed src/script.scm -> src/eval.scm.
+
+2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
+
 	* src/guile.cc: add file heading.
 	* src/script.scm: add file heading.
 

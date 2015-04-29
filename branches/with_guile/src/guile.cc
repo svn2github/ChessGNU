@@ -317,7 +317,7 @@ void guile_hello(void)
     scm_c_define_gsubr( "is-colour-turn-black", 1, 0, 0, (void*)c_is_colour_turn_black );
 
     // Load the scheme function definition
-    scm_c_primitive_load( "script.scm" );
+    scm_c_primitive_load( "eval.scm" );
 
     func_symbol = scm_c_lookup( "do-hello" );
     func = scm_variable_ref( func_symbol );
