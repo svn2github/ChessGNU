@@ -28,5 +28,5 @@ int eval( board_t *board )              SCM eval_builtin( void )
 --------------------------------------------------------------------------------
 
 Next steps:
-* Split eval_builtin into several primitives available from Guile, each
-returning partial evaluation: material, patterns, etc.
+* Split eval_builtin into small primitives available from Guile, such that
+the weight is assigned in Scheme, not in C++.

@@ -123,6 +123,10 @@ static int MobUnit[ColourNb][PieceNb];
 
 static int KingAttackUnit[PieceNb];
 
+#ifdef HAVE_GUILE
+SCM func_eval_guile;
+#endif
+
 // prototypes
 #ifdef HAVE_GUILE
 extern
@@ -257,17 +261,11 @@ void eval_init() {
 // eval()
 
 #ifdef HAVE_GUILE
-const board_t * board_tmp;
-
 SCM
-eval_builtin( void ) {
+eval_builtin( SCM board_handle ) {
+   const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
 #else
 int eval(const board_t * board) {
-#endif
-
-#ifdef HAVE_GUILE
-   const board_t * board = board_tmp;
-   //board = board_tmp;
 #endif
 
    int opening, endgame;
@@ -376,272 +374,14 @@ int eval(const board_t * board) {
 }
 
 #ifdef HAVE_GUILE
-// Primitives other than eval-builtin
-
-// Global variables shared by primitives
-static int opening, endgame;
-static material_info_t mat_info[1];
-static pawn_info_t pawn_info[1];
-static int mul[ColourNb];
-static int phase;
-static int val_eval;
-static int wb, bb;
-
-SCM
-eval_builtin21( void ) {
-
-   const board_t * board = board_tmp;
-/*
-   int opening, endgame;
-   material_info_t mat_info[1];
-   pawn_info_t pawn_info[1];
-   int mul[ColourNb];
-   int phase;
-   int eval;
-   int wb, bb;
-*/
-   ASSERT(board!=NULL);
-
-   ASSERT(board_is_legal(board));
-   ASSERT(!board_is_check(board)); // exceptions are extremely rare
-
-   // init
-
-   opening = 0;
-   endgame = 0;
-
-   // material
-
-   material_get_info(mat_info,board);
-
-   opening += mat_info->opening;
-   endgame += mat_info->endgame;
-
-   mul[White] = mat_info->mul[White];
-   mul[Black] = mat_info->mul[Black];
-
-   // PST
-
-   opening += board->opening;
-   endgame += board->endgame;
-
-   // pawns
-
-   pawn_get_info(pawn_info,board);
-
-   opening += pawn_info->opening;
-   endgame += pawn_info->endgame;
-
-   // draw
-
-   eval_draw(board,mat_info,pawn_info,mul);
-
-   if (mat_info->mul[White] < mul[White]) mul[White] = mat_info->mul[White];
-   if (mat_info->mul[Black] < mul[Black]) mul[Black] = mat_info->mul[Black];
-
-   if (mul[White] == 0 && mul[Black] == 0) return ValueDraw;
-
-   // eval
-
-   eval_piece(board,mat_info,pawn_info,&opening,&endgame);
-   eval_king(board,mat_info,&opening,&endgame);
-   eval_passer(board,pawn_info,&opening,&endgame);
-   eval_pattern(board,&opening,&endgame);
-
-   // phase mix
-
-   phase = mat_info->phase;
-   val_eval = ((opening * (256 - phase)) + (endgame * phase)) / 256;
-
-   return scm_from_int( val_eval );
-/*
-   // drawish bishop endgames
-
-   if ((mat_info->flags & DrawBishopFlag) != 0) {
-
-      wb = board->piece[White][1];
-      ASSERT(PIECE_IS_BISHOP(board->square[wb]));
-
-      bb = board->piece[Black][1];
-      ASSERT(PIECE_IS_BISHOP(board->square[bb]));
-
-      if (SQUARE_COLOUR(wb) != SQUARE_COLOUR(bb)) {
-         if (mul[White] == 16) mul[White] = 8; // 1/2
-         if (mul[Black] == 16) mul[Black] = 8; // 1/2
-      }
-   }
-
-   // draw bound
-
-   if (eval > ValueDraw) {
-      eval = (eval * mul[White]) / 16;
-   } else if (eval < ValueDraw) {
-      eval = (eval * mul[Black]) / 16;
-   }
-
-   // value range
-
-   if (eval < -ValueEvalInf) eval = -ValueEvalInf;
-   if (eval > +ValueEvalInf) eval = +ValueEvalInf;
-
-   ASSERT(eval>=-ValueEvalInf&&eval<=+ValueEvalInf);
-
-   // turn
-
-   if (COLOUR_IS_BLACK(board->turn)) eval = -eval;
-
-   ASSERT(!value_is_mate(eval));
-
-   return scm_from_int( eval );
-*/
-}
-
-SCM
-eval_builtin22( void ) {
-
-   const board_t * board = board_tmp;
-/*
-   int opening, endgame;
-   material_info_t mat_info[1];
-   pawn_info_t pawn_info[1];
-   int mul[ColourNb];
-   int phase;
-   int eval;
-   int wb, bb;
-*/
-/*   ASSERT(board!=NULL);
-
-   ASSERT(board_is_legal(board));
-   ASSERT(!board_is_check(board)); // exceptions are extremely rare
-
-   // init
-
-   opening = 0;
-   endgame = 0;
-
-   // material
-
-   material_get_info(mat_info,board);
-
-   opening += mat_info->opening;
-   endgame += mat_info->endgame;
-
-   mul[White] = mat_info->mul[White];
-   mul[Black] = mat_info->mul[Black];
-
-   // PST
-
-   opening += board->opening;
-   endgame += board->endgame;
-
-   // pawns
-
-   pawn_get_info(pawn_info,board);
-
-   opening += pawn_info->opening;
-   endgame += pawn_info->endgame;
-
-   // draw
-
-   eval_draw(board,mat_info,pawn_info,mul);
-
-   if (mat_info->mul[White] < mul[White]) mul[White] = mat_info->mul[White];
-   if (mat_info->mul[Black] < mul[Black]) mul[Black] = mat_info->mul[Black];
-
-   if (mul[White] == 0 && mul[Black] == 0) return ValueDraw;
-
-   // eval
-
-   eval_piece(board,mat_info,pawn_info,&opening,&endgame);
-   eval_king(board,mat_info,&opening,&endgame);
-   eval_passer(board,pawn_info,&opening,&endgame);
-   eval_pattern(board,&opening,&endgame);
-
-   // phase mix
-
-   phase = mat_info->phase;
-   eval = ((opening * (256 - phase)) + (endgame * phase)) / 256;
-*/
-   // drawish bishop endgames
-
-   if ((mat_info->flags & DrawBishopFlag) != 0) {
-
-      wb = board->piece[White][1];
-      ASSERT(PIECE_IS_BISHOP(board->square[wb]));
-
-      bb = board->piece[Black][1];
-      ASSERT(PIECE_IS_BISHOP(board->square[bb]));
-
-      if (SQUARE_COLOUR(wb) != SQUARE_COLOUR(bb)) {
-         if (mul[White] == 16) mul[White] = 8; // 1/2
-         if (mul[Black] == 16) mul[Black] = 8; // 1/2
-      }
-   }
-
-   // draw bound
-
-   if (val_eval > ValueDraw) {
-      val_eval = (val_eval * mul[White]) / 16;
-   } else if (val_eval < ValueDraw) {
-      val_eval = (val_eval * mul[Black]) / 16;
-   }
-
-   // value range
-
-   if (val_eval < -ValueEvalInf) val_eval = -ValueEvalInf;
-   if (val_eval > +ValueEvalInf) val_eval = +ValueEvalInf;
-
-   ASSERT(val_eval>=-ValueEvalInf&&val_eval<=+ValueEvalInf);
-
-   // turn
-
-   if (COLOUR_IS_BLACK(board->turn)) val_eval = -val_eval;
-
-   ASSERT(!value_is_mate(val_eval));
-
-   return scm_from_int( val_eval );
-}
-#endif
-
-#ifdef HAVE_GUILE
-SCM func_eval_guile;
-
-typedef scm_t_subr FN;
-/*
 int eval(const board_t * board) {
-   // Save parameter in global variable, because Guile counterpart has no
-      parameter.
-   board_tmp = board;
+   SCM func_symbol;
+   SCM func;
 
-    SCM func_symbol;
-    SCM func;
+   scm_init_guile();
 
-    scm_init_guile();
-
-    //scm_c_define_gsubr( "eval-builtin", 0, 0, 0, (void*)eval_builtin );
-
-    // Load the scheme function definition
-    //scm_c_primitive_load( "script.scm" );
-
-    func_symbol = scm_c_lookup( "eval-guile" );
-    func_eval_guile = scm_variable_ref( func_symbol );
-
-   SCM ret_val;
-   int result=0;
-   ret_val = scm_call_0( func_eval_guile );
-   //ret_val = scm_call_1( func_eval_guile, scm_int2num(0) );
-   result = scm_num2int( ret_val, 0, NULL );
-   return result;
-}
-*/
-int eval(const board_t * board) {
-    SCM func_symbol;
-    SCM func;
-
-    scm_init_guile();
-
-    func_symbol = scm_c_lookup( "eval-guile" );
-    func_eval_guile = scm_variable_ref( func_symbol );
+   func_symbol = scm_c_lookup( "eval-guile" );
+   func_eval_guile = scm_variable_ref( func_symbol );
 
    SCM ret_val;
    int result=0;

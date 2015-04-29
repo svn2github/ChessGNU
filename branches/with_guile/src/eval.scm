@@ -33,19 +33,13 @@
     (display text)
       (newline)))
 
-(define eval-guile-basic
-  (lambda ()
-    (begin (eval-builtin))
-  )
-)
-
-(define eval-guile-1
+(define eval-guile-c
   (lambda (board_handle)
-    (begin (eval-builtin-1 board_handle))
+    (begin (eval-builtin board_handle))
   )
 )
 
-(define eval-guile-2
+(define eval-guile-scm
   (lambda (board-handle)
     (begin 
       (define material-handle (material-get-info board-handle))
@@ -126,18 +120,8 @@
   )
 )
 
-(define eval-guile-basic-2
-  (lambda ()
-    (begin 
-      (define e1 (eval-builtin21))
-      (define e2 (eval-builtin22))
-      (+ e1 e2)
-    )
-  )
-)
-
 (define eval-guile
   (lambda (board-handle)
-    (begin (eval-guile-2 board-handle))
+    (begin (eval-guile-scm board-handle))
   )
 )

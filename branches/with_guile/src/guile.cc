@@ -282,11 +282,7 @@ void guile_hello(void)
     scm_init_guile();
 
     // C++ primitives for Scheme
-    scm_c_define_gsubr( "eval-builtin", 0, 0, 0, (void*)engine::eval_builtin );
-    scm_c_define_gsubr( "eval-builtin-1", 1, 0, 0, (void*)engine::eval_builtin1 );
-    scm_c_define_gsubr( "eval-builtin21", 0, 0, 0, (void*)engine::eval_builtin21 );
-    scm_c_define_gsubr( "eval-builtin22", 0, 0, 0, (void*)engine::eval_builtin22 );
-      
+    scm_c_define_gsubr( "eval-builtin", 1, 0, 0, (void*)engine::eval_builtin );
     scm_c_define_gsubr( "material-get-info", 1, 0, 0, (void*)c_material_get_info );
     scm_c_define_gsubr( "material-get-info-opening", 1, 0, 0, (void*)c_material_get_info_opening );
     scm_c_define_gsubr( "material-get-info-endgame", 1, 0, 0, (void*)c_material_get_info_endgame );

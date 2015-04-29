@@ -43,10 +43,7 @@ namespace engine {
 extern void eval_init ();
 
 #ifdef HAVE_GUILE
-extern SCM eval_builtin( void );
-extern SCM eval_builtin1( SCM board_handle );
-extern SCM eval_builtin22( void );
-extern SCM eval_builtin21( void );
+extern SCM eval_builtin( SCM board_handle );
 extern void eval_draw(const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int mul[2]);
 extern void eval_piece         (const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int * opening, int * endgame);
 extern void eval_king          (const board_t * board, const material_info_t * mat_info, int * opening, int * endgame);

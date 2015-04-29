@@ -1,5 +1,13 @@
 2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
 
+	* src/eval.scm: remove unused functions.
+	* src/guile.cc: remove unused functions.
+	* src/engine/eval.h: remove unused functions.
+	* src/engine/eval.cpp: remove unused functions.
+	* TODO: update takss.
+
+2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
+
 	* src/script.scm: renamed as src/eval.scm.
 	* src/eval.scm: renamed from src/script.scm.
 	* src/guile.cc: renamed src/script.scm -> src/eval.scm.
