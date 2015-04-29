@@ -1,3 +1,14 @@
+2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
+
+	* src/engine/eval.h: qualify as extern the functions required by
+	Guile primitives.
+	* src/engine/eval.cpp: qualify as extern the functions required
+	by Guile primitives. Add ancilliary built-in evaluation
+	functions.
+	* src/guile.cc: add Guile intermediate primitives.
+	* src/script.scm: evaluation based on Guile intermediate
+	primitives.
+
 2015-04-19  Antonio Ceballos  <aceballos@gmail.com>
 
 	* src/engine/eval.cpp: add eval-guile function and eval-builtin

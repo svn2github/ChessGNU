@@ -31,6 +31,10 @@
 #endif
 #include "board.h"
 #include "util.h"
+#ifdef HAVE_GUILE
+#include "material.h"
+#include "pawn.h"
+#endif
 
 namespace engine {
 
@@ -40,6 +44,14 @@ extern void eval_init ();
 
 #ifdef HAVE_GUILE
 extern SCM eval_builtin( void );
+extern SCM eval_builtin1( SCM board_handle );
+extern SCM eval_builtin22( void );
+extern SCM eval_builtin21( void );
+extern void eval_draw(const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int mul[2]);
+extern void eval_piece         (const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int * opening, int * endgame);
+extern void eval_king          (const board_t * board, const material_info_t * mat_info, int * opening, int * endgame);
+extern void eval_passer        (const board_t * board, const pawn_info_t * pawn_info, int * opening, int * endgame);
+extern void eval_pattern       (const board_t * board, int * opening, int * endgame);
 
 extern SCM func_eval_guile;
 #endif

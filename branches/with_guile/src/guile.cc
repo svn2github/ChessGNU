@@ -4,8 +4,248 @@
 
 #include "engine/board.h"
 #include "engine/eval.h"
+#include "engine/material.h"
+#include "engine/pawn.h"
 
-using engine::board_t;
+using namespace engine;
+
+// C++ global variables that are local to eval() in standard version
+static material_info_t s_mat_info[1];  // Assumed that it is not necessary to clean it.
+static pawn_info_t s_pawn_info[1];  // Assumed that it is not necessary to clean it.
+static int s_mul[ColourNb];  // Assumed that it is not necessary to clean it.
+
+// C++ primitives for Scheme
+
+SCM c_material_get_info( SCM board_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    material_get_info( s_mat_info, board );
+    SCM material_info_handle = scm_ulong2num( (unsigned long)s_mat_info );
+    return material_info_handle;
+}
+
+SCM c_material_get_info_opening( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    int opening = material_info->opening;
+    return scm_int2num( opening );
+}
+
+SCM c_material_get_info_endgame( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    int endgame = material_info->endgame;
+    return scm_int2num( endgame );
+}
+
+SCM c_material_get_mul( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    unsigned short mul_white = material_info->mul[White];
+    s_mul[White] = material_info->mul[White];
+    s_mul[Black] = material_info->mul[Black];
+    return scm_ulong2num( (unsigned long)s_mul );
+}
+
+SCM c_material_get_mul_white( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    unsigned short mul_white = material_info->mul[White];
+    return scm_ushort2num( mul_white );
+}
+
+SCM c_material_get_mul_black( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    unsigned short mul_black = material_info->mul[Black];
+    return scm_ushort2num( mul_black );
+}
+
+SCM c_board_get_opening( SCM board_handle )
+{
+    board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    int opening = board->opening;
+    return scm_int2num( opening );
+}
+
+SCM c_board_get_endgame( SCM board_handle )
+{
+    board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    int endgame = board->endgame;
+    return scm_int2num( endgame );
+}
+
+SCM c_pawn_get_info( SCM board_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    pawn_get_info( s_pawn_info, board );
+    SCM pawn_info_handle = scm_ulong2num( (unsigned long)s_pawn_info );
+    return pawn_info_handle;
+}
+
+SCM c_pawn_get_opening( SCM pawn_handle )
+{
+    pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int opening = pawn_info->opening;
+    return scm_int2num( opening );
+}
+
+SCM c_pawn_get_endgame( SCM pawn_handle )
+{
+    pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int endgame = pawn_info->endgame;
+    return scm_int2num( endgame );
+}
+
+SCM c_eval_draw( SCM board_handle, SCM material_info_handle, SCM pawn_handle, SCM mul_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const material_info_t * mat_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    const pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int * mul = (int *)scm_num2ulong( mul_handle, 0, NULL );
+    eval_draw( board, mat_info, pawn_info, mul );
+    return scm_ulong2num( (unsigned long)mul );
+}
+
+SCM c_eval_draw_get_mul_white( SCM mul_handle )
+{
+    int * mul = (int *)scm_num2ulong( mul_handle, 0, NULL );
+    return scm_int2num( mul[White] );
+}
+
+SCM c_eval_draw_get_mul_black( SCM mul_handle )
+{
+    int * mul = (int *)scm_num2ulong( mul_handle, 0, NULL );
+    return scm_int2num( mul[Black] );
+}
+
+SCM c_eval_piece_get_opening( SCM board_handle, SCM material_info_handle, SCM pawn_handle, SCM scm_opening )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const material_info_t * mat_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    const pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int opening = scm_num2int( scm_opening, 0, NULL );
+    int endgame;
+    eval_piece( board, mat_info, pawn_info, &opening, &endgame );
+    return scm_int2num( opening );
+}
+
+SCM c_eval_piece_get_endgame( SCM board_handle, SCM material_info_handle, SCM pawn_handle, SCM scm_endgame )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const material_info_t * mat_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    const pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int opening;
+    int endgame = scm_num2int( scm_endgame, 0, NULL );
+    eval_piece( board, mat_info, pawn_info, &opening, &endgame );
+    return scm_int2num( endgame );
+}
+
+SCM c_eval_king_get_opening( SCM board_handle, SCM material_info_handle, SCM scm_opening )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const material_info_t * mat_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    int opening = scm_num2int( scm_opening, 0, NULL );
+    int endgame;
+    eval_king( board, mat_info, &opening, &endgame );
+    return scm_int2num( opening );
+}
+
+SCM c_eval_king_get_endgame( SCM board_handle, SCM material_info_handle, SCM scm_endgame )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const material_info_t * mat_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    int opening;
+    int endgame = scm_num2int( scm_endgame, 0, NULL );
+    eval_king( board, mat_info, &opening, &endgame );
+    return scm_int2num( endgame );
+}
+
+SCM c_eval_passer_get_opening( SCM board_handle, SCM pawn_handle, SCM scm_opening )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int opening = scm_num2int( scm_opening, 0, NULL );
+    int endgame;
+    eval_passer( board, pawn_info, &opening, &endgame );
+    return scm_int2num( opening );
+}
+
+SCM c_eval_passer_get_endgame( SCM board_handle, SCM pawn_handle, SCM scm_endgame )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    const pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    int opening;
+    int endgame = scm_num2int( scm_endgame, 0, NULL );
+    eval_passer( board, pawn_info, &opening, &endgame );
+    return scm_int2num( endgame );
+}
+
+SCM c_eval_pattern_get_opening( SCM board_handle, SCM scm_opening )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    int opening = scm_num2int( scm_opening, 0, NULL );
+    int endgame;
+    eval_pattern( board, &opening, &endgame );
+    return scm_int2num( opening );
+}
+
+SCM c_eval_pattern_get_endgame( SCM board_handle, SCM scm_endgame )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    int opening;
+    int endgame = scm_num2int( scm_endgame, 0, NULL );
+    eval_pattern( board, &opening, &endgame );
+    return scm_int2num( endgame );
+}
+
+SCM c_get_phase( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    int phase = material_info->phase;
+    return scm_int2num( phase );
+}
+
+SCM c_is_set_draw_bishop_flag( SCM material_info_handle )
+{
+    material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
+    if ( ( material_info->flags & DrawBishopFlag ) != 0 ) {
+        return SCM_BOOL_T;
+    } else {
+        return SCM_BOOL_F;
+    }
+}
+
+SCM c_board_get_piece_white( SCM board_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    int wb = board->piece[White][1];
+    return scm_int2num( wb );
+}
+
+SCM c_board_get_piece_black( SCM board_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    int bb = board->piece[Black][1];
+    return scm_int2num( bb );
+}
+
+SCM c_square_colour( SCM scm_b )
+{
+    int b = scm_num2int( scm_b, 0, NULL );
+    int c = SQUARE_COLOUR( b );
+    return scm_int2num( c );
+}
+
+SCM c_is_colour_turn_black( SCM board_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    if ( COLOUR_IS_BLACK( board->turn ) ) {
+        return SCM_BOOL_T;
+    } else {
+        return SCM_BOOL_F;
+    }
+}
 
 void guile_hello(void)
 {
@@ -16,7 +256,40 @@ void guile_hello(void)
 
     scm_init_guile();
 
-    scm_c_define_gsubr( "eval_builtin", 0, 0, 0, (void*)engine::eval_builtin );
+    // C++ primitives for Scheme
+    scm_c_define_gsubr( "eval-builtin", 0, 0, 0, (void*)engine::eval_builtin );
+    scm_c_define_gsubr( "eval-builtin-1", 1, 0, 0, (void*)engine::eval_builtin1 );
+    scm_c_define_gsubr( "eval-builtin21", 0, 0, 0, (void*)engine::eval_builtin21 );
+    scm_c_define_gsubr( "eval-builtin22", 0, 0, 0, (void*)engine::eval_builtin22 );
+      
+    scm_c_define_gsubr( "material-get-info", 1, 0, 0, (void*)c_material_get_info );
+    scm_c_define_gsubr( "material-get-info-opening", 1, 0, 0, (void*)c_material_get_info_opening );
+    scm_c_define_gsubr( "material-get-info-endgame", 1, 0, 0, (void*)c_material_get_info_endgame );
+    scm_c_define_gsubr( "material-get-mul", 1, 0, 0, (void*)c_material_get_mul );
+    scm_c_define_gsubr( "material-get-mul-white", 1, 0, 0, (void*)c_material_get_mul_white );
+    scm_c_define_gsubr( "material-get-mul-black", 1, 0, 0, (void*)c_material_get_mul_black );
+    scm_c_define_gsubr( "board-get-opening", 1, 0, 0, (void*)c_board_get_opening );
+    scm_c_define_gsubr( "board-get-endgame", 1, 0, 0, (void*)c_board_get_endgame );
+    scm_c_define_gsubr( "pawn-get-info", 1, 0, 0, (void*)c_pawn_get_info );
+    scm_c_define_gsubr( "pawn-get-opening", 1, 0, 0, (void*)c_pawn_get_opening );
+    scm_c_define_gsubr( "pawn-get-endgame", 1, 0, 0, (void*)c_pawn_get_endgame );
+    scm_c_define_gsubr( "eval-draw", 4, 0, 0, (void*)c_eval_draw );
+    scm_c_define_gsubr( "eval-draw-get-mul-white", 1, 0, 0, (void*)c_eval_draw_get_mul_white );
+    scm_c_define_gsubr( "eval-draw-get-mul-black", 1, 0, 0, (void*)c_eval_draw_get_mul_black );
+    scm_c_define_gsubr( "eval-piece-get-opening", 4, 0, 0, (void*)c_eval_piece_get_opening );
+    scm_c_define_gsubr( "eval-piece-get-endgame", 4, 0, 0, (void*)c_eval_piece_get_endgame );
+    scm_c_define_gsubr( "eval-king-get-opening", 3, 0, 0, (void*)c_eval_king_get_opening );
+    scm_c_define_gsubr( "eval-king-get-endgame", 3, 0, 0, (void*)c_eval_king_get_endgame );
+    scm_c_define_gsubr( "eval-passer-get-opening", 3, 0, 0, (void*)c_eval_passer_get_opening );
+    scm_c_define_gsubr( "eval-passer-get-endgame", 3, 0, 0, (void*)c_eval_passer_get_endgame );
+    scm_c_define_gsubr( "eval-pattern-get-opening", 2, 0, 0, (void*)c_eval_pattern_get_opening );
+    scm_c_define_gsubr( "eval-pattern-get-endgame", 2, 0, 0, (void*)c_eval_pattern_get_endgame );
+    scm_c_define_gsubr( "get-phase", 1, 0, 0, (void*)c_get_phase );
+    scm_c_define_gsubr( "is-set-draw-bishop-flag", 1, 0, 0, (void*)c_is_set_draw_bishop_flag );
+    scm_c_define_gsubr( "board-get-piece-white", 1, 0, 0, (void*)c_board_get_piece_white );
+    scm_c_define_gsubr( "board-get-piece-black", 1, 0, 0, (void*)c_board_get_piece_black );
+    scm_c_define_gsubr( "square-colour", 1, 0, 0, (void*)c_square_colour );
+    scm_c_define_gsubr( "is-colour-turn-black", 1, 0, 0, (void*)c_is_colour_turn_black );
 
     // Load the scheme function definition
     scm_c_primitive_load( "script.scm" );
