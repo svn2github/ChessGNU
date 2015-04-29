@@ -1,5 +1,10 @@
 2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
 
+	* src/guile.cc: add file heading.
+	* src/script.scm: add file heading.
+
+2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
+
 	* src/engine/eval.h: qualify as extern the functions required by
 	Guile primitives.
 	* src/engine/eval.cpp: qualify as extern the functions required
