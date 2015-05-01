@@ -375,6 +375,10 @@ int eval(const board_t * board) {
 
 #ifdef HAVE_GUILE
 int eval(const board_t * board) {
+   material_info_t mat_info[1];
+   pawn_info_t pawn_info[1];
+   int mul[ColourNb];
+
    SCM func_symbol;
    SCM func;
 
@@ -385,7 +389,11 @@ int eval(const board_t * board) {
 
    SCM ret_val;
    int result=0;
-   ret_val = scm_call_1( func_eval_guile, scm_ulong2num( (unsigned long)board ) );
+   ret_val = scm_call_4( func_eval_guile, 
+                            scm_ulong2num( (unsigned long)board ),
+                            scm_ulong2num( (unsigned long)mat_info ),
+                            scm_ulong2num( (unsigned long)pawn_info ),
+                            scm_ulong2num( (unsigned long)mul ) );
    result = scm_num2int( ret_val, 0, NULL );
    return result;
 }

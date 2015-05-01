@@ -1,3 +1,12 @@
+2015-05-01  Antonio Ceballos  <aceballos@gmail.com>
+
+	* src/eval.scm: material info, pawn info and mul as parameters
+	instead of glboal variables.
+	* src/guile.cc: material info, pawn info and mul as parameters
+	instead of glboal variables.
+	* src/engine/eval.cpp: material info, pawn info and mul as 
+	parameters instead of glboal variables.
+
 2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
 
 	* src/eval.scm: remove unused functions.

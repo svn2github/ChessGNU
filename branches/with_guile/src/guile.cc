@@ -34,19 +34,14 @@
 
 using namespace engine;
 
-// C++ global variables that are local to eval() in standard version
-static material_info_t s_mat_info[1];  // Assumed that it is not necessary to clean it.
-static pawn_info_t s_pawn_info[1];  // Assumed that it is not necessary to clean it.
-static int s_mul[ColourNb];  // Assumed that it is not necessary to clean it.
-
 // C++ primitives for Scheme
 
-SCM c_material_get_info( SCM board_handle )
+SCM c_material_get_info( SCM board_handle, SCM mat_handle )
 {
     const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
-    material_get_info( s_mat_info, board );
-    SCM material_info_handle = scm_ulong2num( (unsigned long)s_mat_info );
-    return material_info_handle;
+    material_info_t * mat_info = (material_info_t *)scm_num2ulong( mat_handle, 0, NULL );
+    material_get_info( mat_info, board );
+    return scm_int2num( 0 );
 }
 
 SCM c_material_get_info_opening( SCM material_info_handle )
@@ -63,13 +58,13 @@ SCM c_material_get_info_endgame( SCM material_info_handle )
     return scm_int2num( endgame );
 }
 
-SCM c_material_get_mul( SCM material_info_handle )
+SCM c_material_get_mul( SCM material_info_handle, SCM mul_handle )
 {
     material_info_t * material_info = (material_info_t *)scm_num2ulong( material_info_handle, 0, NULL );
-    unsigned short mul_white = material_info->mul[White];
-    s_mul[White] = material_info->mul[White];
-    s_mul[Black] = material_info->mul[Black];
-    return scm_ulong2num( (unsigned long)s_mul );
+    int * mul = (int *)scm_num2ulong( mul_handle, 0, NULL );
+    mul[White] = material_info->mul[White];
+    mul[Black] = material_info->mul[Black];
+    return scm_int2num( 0 );
 }
 
 SCM c_material_get_mul_white( SCM material_info_handle )
@@ -100,12 +95,12 @@ SCM c_board_get_endgame( SCM board_handle )
     return scm_int2num( endgame );
 }
 
-SCM c_pawn_get_info( SCM board_handle )
+SCM c_pawn_get_info( SCM board_handle, SCM pawn_handle )
 {
     const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
-    pawn_get_info( s_pawn_info, board );
-    SCM pawn_info_handle = scm_ulong2num( (unsigned long)s_pawn_info );
-    return pawn_info_handle;
+    pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
+    pawn_get_info( pawn_info, board );
+    return scm_int2num( 0 );
 }
 
 SCM c_pawn_get_opening( SCM pawn_handle )
@@ -129,7 +124,7 @@ SCM c_eval_draw( SCM board_handle, SCM material_info_handle, SCM pawn_handle, SC
     const pawn_info_t * pawn_info = (pawn_info_t *)scm_num2ulong( pawn_handle, 0, NULL );
     int * mul = (int *)scm_num2ulong( mul_handle, 0, NULL );
     eval_draw( board, mat_info, pawn_info, mul );
-    return scm_ulong2num( (unsigned long)mul );
+    return scm_int2num( 0 );
 }
 
 SCM c_eval_draw_get_mul_white( SCM mul_handle )
@@ -283,15 +278,15 @@ void guile_hello(void)
 
     // C++ primitives for Scheme
     scm_c_define_gsubr( "eval-builtin", 1, 0, 0, (void*)engine::eval_builtin );
-    scm_c_define_gsubr( "material-get-info", 1, 0, 0, (void*)c_material_get_info );
+    scm_c_define_gsubr( "material-get-info", 2, 0, 0, (void*)c_material_get_info );
     scm_c_define_gsubr( "material-get-info-opening", 1, 0, 0, (void*)c_material_get_info_opening );
     scm_c_define_gsubr( "material-get-info-endgame", 1, 0, 0, (void*)c_material_get_info_endgame );
-    scm_c_define_gsubr( "material-get-mul", 1, 0, 0, (void*)c_material_get_mul );
+    scm_c_define_gsubr( "material-get-mul", 2, 0, 0, (void*)c_material_get_mul );
     scm_c_define_gsubr( "material-get-mul-white", 1, 0, 0, (void*)c_material_get_mul_white );
     scm_c_define_gsubr( "material-get-mul-black", 1, 0, 0, (void*)c_material_get_mul_black );
     scm_c_define_gsubr( "board-get-opening", 1, 0, 0, (void*)c_board_get_opening );
     scm_c_define_gsubr( "board-get-endgame", 1, 0, 0, (void*)c_board_get_endgame );
-    scm_c_define_gsubr( "pawn-get-info", 1, 0, 0, (void*)c_pawn_get_info );
+    scm_c_define_gsubr( "pawn-get-info", 2, 0, 0, (void*)c_pawn_get_info );
     scm_c_define_gsubr( "pawn-get-opening", 1, 0, 0, (void*)c_pawn_get_opening );
     scm_c_define_gsubr( "pawn-get-endgame", 1, 0, 0, (void*)c_pawn_get_endgame );
     scm_c_define_gsubr( "eval-draw", 4, 0, 0, (void*)c_eval_draw );
