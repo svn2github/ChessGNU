@@ -1,7 +1,7 @@
 # Process this file with automake to produce Makefile.in 
 # Makefile for gnuchess/src/engine.
 #
-# Copyright (C) 2001-2011 Free Software Foundation, Inc.
+# Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,11 @@ AM_CXXFLAGS = $(PTHREAD_CXXFLAGS)
 # AM_CXXFLAGS += -fno-exceptions -fno-rtti -O3 -fstrict-aliasing -fomit-frame-pointer
 
 AM_LDFLAGS = $(PTHREAD_LDFLAGS) $(PTHREAD_LIBS)
+
+if HAVE_GUILE
+AM_CPPFLAGS += `guile-config compile` -DHAVE_GUILE
+AM_LDFLAGS += `guile-config link`
+endif
 
 DISTCLEANFILES = *~
 

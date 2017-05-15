@@ -1,3 +1,6 @@
+2017-05-15  Antonio Ceballos  <aceballos@gmail.com>
+	* src/engine/Makefile.am: compile with HAVE_GUILE.
+
 2015-05-01  Antonio Ceballos  <aceballos@gmail.com>
 
 	* src/eval.scm: material info, pawn info and mul as parameters
@@ -488,7 +491,7 @@
 	* src/frontend/engine.c: comment out extra output write.
 	* src/adapter/adapter.cpp: remove debug trace.
 
-Copyright (C) 2001-2015 Free Software Foundation, Inc.
+Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
