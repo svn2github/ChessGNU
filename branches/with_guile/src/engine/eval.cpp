@@ -26,6 +26,8 @@
 #include <cstdlib> // for abs()
 #ifdef HAVE_GUILE
 #include <libguile.h>
+#else
+#error "No GUILE"
 #endif
 
 #include "attack.h"

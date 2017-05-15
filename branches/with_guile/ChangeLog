@@ -1,4 +1,11 @@
 2017-05-15  Antonio Ceballos  <aceballos@gmail.com>
+	* TODO: update Guile realted tasks.
+	* src/main.cc: add Guile related comments.
+	* src/guile.cc: add Guile related comments.
+	* src/eval.scm: add Guile related comments.
+	* src/engine/eval.cpp: add Guile related comments.
+
+2017-05-15  Antonio Ceballos  <aceballos@gmail.com>
 	* src/engine/Makefile.am: compile with HAVE_GUILE.
 
 2015-05-01  Antonio Ceballos  <aceballos@gmail.com>
@@ -16,7 +23,7 @@
 	* src/guile.cc: remove unused functions.
 	* src/engine/eval.h: remove unused functions.
 	* src/engine/eval.cpp: remove unused functions.
-	* TODO: update takss.
+	* TODO: update tasks.
 
 2015-04-29  Antonio Ceballos  <aceballos@gmail.com>
 

@@ -1,6 +1,6 @@
 TODO of GNU Chess
 
-  Copyright (C) 2001-2015 Free Software Foundation, Inc.
+  Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -28,5 +28,9 @@ int eval( board_t *board )              SCM eval_builtin( void )
 --------------------------------------------------------------------------------
 
 Next steps:
+* Let GNU Chess find eval.scm when not started from src/.
 * Split eval_builtin into small primitives available from Guile, such that
 the weight is assigned in Scheme, not in C++.
+* Split material_get_info and material_comp_info into primitives.
+* Add a primitive that returns the board position in una of the standard formats, e.g. FEN. This would be suitable for an arbitrary Scheme evaluation function.
+* Genetic algorithms.

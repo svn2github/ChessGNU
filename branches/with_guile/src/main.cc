@@ -1,6 +1,6 @@
 /* GNU Chess 6 - main.cc - entry point
 
-   Copyright (c) 2001-2015 Free Software Foundation, Inc.
+   Copyright (c) 2001-2017 Free Software Foundation, Inc.
 
    GNU Chess is based on the two research programs
    Cobalt by Chua Kong-Sian and Gazebo by Stuart Cracraft.
@@ -213,7 +213,8 @@ int Mask315[64] =
 extern char userinputbuf[];
 
 #ifdef HAVE_GUILE
-void guile_hello(void);
+/* Initialize Guile */
+void init_chess_guile(void);
 #endif
 
 int main (int argc, char *argv[])
@@ -378,14 +379,16 @@ int main (int argc, char *argv[])
   if (opt_version == 1)
 	return(0);
 
-  /* Startup output */
 #ifdef HAVE_GUILE
-        guile_hello();
+        /* Initialize Guile */
+        init_chess_guile();
 #else
         printf("GUILE not enabled; install with './configure --enable-guile'.\n");
 #endif
+
+  /* Startup output */
   if ( !( flags & XBOARD ) && ( !opt_quiet ) && ( !opt_uci) ) {
-    printf( "Copyright (C) 2015 Free Software Foundation, Inc.\n" );
+    printf( "Copyright (C) 2017 Free Software Foundation, Inc.\n" );
     printf( "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" );
     printf( "This is free software: you are free to change and redistribute it.\n" );
     printf( "There is NO WARRANTY, to the extent permitted by law.\n" );

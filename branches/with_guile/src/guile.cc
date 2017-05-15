@@ -1,6 +1,6 @@
-/* GNU Chess 6 - guile.cc - Guile primitives
+/* GNU Chess 6 - guile.cc - Guile mode and primitives
 
-   Copyright (c) 2001-2015 Free Software Foundation, Inc.
+   Copyright (c) 2001-2017 Free Software Foundation, Inc.
 
    GNU Chess is based on the two research programs
    Cobalt by Chua Kong-Sian and Gazebo by Stuart Cracraft.
@@ -35,6 +35,7 @@
 using namespace engine;
 
 // C++ primitives for Scheme
+// Suitable for the function calls in eval_builtin()
 
 SCM c_material_get_info( SCM board_handle, SCM mat_handle )
 {
@@ -267,16 +268,26 @@ SCM c_is_colour_turn_black( SCM board_handle )
     }
 }
 
-void guile_hello(void)
+// C++ primitives for Scheme
+// Atomic primitives, suitable for a user-defined eval-guile-scm
+
+// Initialize Guile and define primitives
+void init_chess_guile(void)
 {
-    printf("GUILE enabled hello...\n");
+    printf("GUILE enabled...\n");
 
     SCM func_symbol;
     SCM func;
 
+    // Initialize Guile
+    // TODO Check in Guile reference if scm_init_guile can be called once,
+    // or if it must be called for every thread.
     scm_init_guile();
 
-    // C++ primitives for Scheme
+    // Define C++ primitives for Scheme
+    // Each call to scm_c_Define_gsubr maps a Scheme function to a C++ function:
+    //   - Scheme functions are defined in src/eval.scm
+    //   - C++ functions are defined in src/engine/
     scm_c_define_gsubr( "eval-builtin", 1, 0, 0, (void*)engine::eval_builtin );
     scm_c_define_gsubr( "material-get-info", 2, 0, 0, (void*)c_material_get_info );
     scm_c_define_gsubr( "material-get-info-opening", 1, 0, 0, (void*)c_material_get_info_opening );
@@ -308,16 +319,21 @@ void guile_hello(void)
     scm_c_define_gsubr( "is-colour-turn-black", 1, 0, 0, (void*)c_is_colour_turn_black );
 
     // Load the scheme function definition
+    // TODO Find src/eval.scm no matter where gnuchess is invoked from.
     scm_c_primitive_load( "eval.scm" );
 
+    // Look up do-hello, a pure Scheme function, i.e. not mapped to a C++ function
     func_symbol = scm_c_lookup( "do-hello" );
     func = scm_variable_ref( func_symbol );
 
+    // Call do-hello to print a welcome message, 0 arguments
     scm_call_0( func );
 
+    // Look up do-print, a pure Scheme function, i.e. not mapped to a C++ function
     func_symbol = scm_c_lookup( "do-print" );
     func = scm_variable_ref( func_symbol );
 
+    // Call do-print to print a welcome message, 1 argument
     SCM text = scm_from_locale_string( "GUILE integration in GNU Chess" );
     scm_call_1( func, text );
 
