@@ -1,3 +1,7 @@
+2017-05-17  Antonio Ceballos  <aceballos@gmail.com>
+	* TODO: update Guile realted tasks.
+	* src/guile.cc: find eval.scm in PKGDATADIR.
+
 2017-05-15  Antonio Ceballos  <aceballos@gmail.com>
 	* TODO: update Guile realted tasks.
 	* src/main.cc: add Guile related comments.

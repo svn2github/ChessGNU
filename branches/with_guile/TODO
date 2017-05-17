@@ -28,7 +28,6 @@ int eval( board_t *board )              SCM eval_builtin( void )
 --------------------------------------------------------------------------------
 
 Next steps:
-* Let GNU Chess find eval.scm when not started from src/.
 * Split eval_builtin into small primitives available from Guile, such that
 the weight is assigned in Scheme, not in C++.
 * Split material_get_info and material_comp_info into primitives.

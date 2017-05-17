@@ -31,8 +31,16 @@
 #include "engine/eval.h"
 #include "engine/material.h"
 #include "engine/pawn.h"
+#include "configmake.h"
 
 using namespace engine;
+
+// compute_pkgdatadir()
+char const *compute_pkgdatadir()
+{
+   char const *pkgdatadir = getenv ("GNUCHESS_PKGDATADIR");
+   return pkgdatadir ? pkgdatadir : PKGDATADIR;
+}
 
 // C++ primitives for Scheme
 // Suitable for the function calls in eval_builtin()
@@ -319,8 +327,29 @@ void init_chess_guile(void)
     scm_c_define_gsubr( "is-colour-turn-black", 1, 0, 0, (void*)c_is_colour_turn_black );
 
     // Load the scheme function definition
-    // TODO Find src/eval.scm no matter where gnuchess is invoked from.
-    scm_c_primitive_load( "eval.scm" );
+    const unsigned int MaxFileNameSize = 255;
+    char eval_scm_file_name[] = "eval.scm";
+    char eval_scm_full_file_name[MaxFileNameSize+1];
+    char path[MaxFileNameSize+1];
+    FILE *eval_scm_file;
+    if ( ( eval_scm_file = fopen(eval_scm_file_name, "r") ) != NULL ) {
+        fclose(eval_scm_file);
+        strcpy(eval_scm_full_file_name,"");
+    } else {
+        if ( strlen(path) + strlen(eval_scm_file_name) + 1 > MaxFileNameSize ) {
+            printf( "Length of file name is too long; must be less than 256.\n" );
+            exit( 1 );
+        }
+        strcpy(path, compute_pkgdatadir());
+        strcpy(eval_scm_full_file_name, path);
+        strcat(eval_scm_full_file_name,"/");
+    }
+    strcat(eval_scm_full_file_name,eval_scm_file_name);
+    if ( fopen(eval_scm_full_file_name, "r") == NULL ) {
+        printf( "Cannot find Scheme file with eval function '%s'\n", eval_scm_full_file_name );
+        exit( 1 );
+    }
+    scm_c_primitive_load( eval_scm_full_file_name );
 
     // Look up do-hello, a pure Scheme function, i.e. not mapped to a C++ function
     func_symbol = scm_c_lookup( "do-hello" );
