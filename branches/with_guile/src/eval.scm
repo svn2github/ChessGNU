@@ -25,12 +25,21 @@
 
 #|
 Chain of calls:
+
+    C++ main()
+      Scheme eval-guile-init
+        C++ engine::eval_enable_userdef()
+        C++ engine::eval_set_param()
+
     C++ eval()
       Scheme eval-guile
         ;Scheme eval-guile-c
         ;  C++ eval_builtin()
         Scheme eval-guile-scm
           C++ primitives
+; eval-guile-c: Invokes primitive eval-builtin, the original eval function.
+; eval-guile-scm: Invoked Scheme eval-guile, in turned invoked from C++ eval().  It is a Scheme version of the original C++ eval(), now (eval_builtin(), based on the C++ primitives.
+; eval-guile: Invoked from C++ eval(). Invokes Scheme eval-guile-scm.
 |#
 
 #|
@@ -48,6 +57,18 @@ Prints a message passed as a string argument.
   (lambda (text)
     (display text)
       (newline)))
+
+#|
+Enable/disable user-defined evaluation function.
+Set parameters of the evaluation function.
+|#
+(define eval-guile-init
+  (lambda ()
+    (begin
+      (eval-enable-userdef 1)
+    )
+  )
+)
 
 #|
 Invokes primitive eval-builtin, the original eval function.
@@ -262,3 +283,4 @@ Invokes Scheme eval-guile-scm.
     (begin (eval-guile-scm board-handle mat-handle pawn-handle mul-handle))
   )
 )
+

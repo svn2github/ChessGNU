@@ -2,7 +2,7 @@
 
    GNU Chess engine
 
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -126,41 +126,17 @@ static int MobUnit[ColourNb][PieceNb];
 static int KingAttackUnit[PieceNb];
 
 #ifdef HAVE_GUILE
-SCM func_eval_guile;
+static int eval_user_defined = 0;
 #endif
 
 // prototypes
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_draw          (const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int mul[2]);
 
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_piece         (const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int * opening, int * endgame);
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_king          (const board_t * board, const material_info_t * mat_info, int * opening, int * endgame);
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_passer        (const board_t * board, const pawn_info_t * pawn_info, int * opening, int * endgame);
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_pattern       (const board_t * board, int * opening, int * endgame);
+static void eval_draw          (const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int mul[2]);
+
+static void eval_piece         (const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int * opening, int * endgame);
+static void eval_king          (const board_t * board, const material_info_t * mat_info, int * opening, int * endgame);
+static void eval_passer        (const board_t * board, const pawn_info_t * pawn_info, int * opening, int * endgame);
+static void eval_pattern       (const board_t * board, int * opening, int * endgame);
 
 static bool unstoppable_passer (const board_t * board, int pawn, int colour);
 static bool king_passer        (const board_t * board, int pawn, int colour);
@@ -187,6 +163,10 @@ static int  shelter_file       (const board_t * board, int file, int rank, int c
 static int  storm_file         (const board_t * board, int file, int colour);
 
 static bool bishop_can_attack  (const board_t * board, int to, int colour);
+
+#ifdef HAVE_GUILE
+static int eval_with_params(const board_t * board);
+#endif
 
 // functions
 
@@ -263,9 +243,16 @@ void eval_init() {
 // eval()
 
 #ifdef HAVE_GUILE
-SCM
-eval_builtin( SCM board_handle ) {
-   const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+int eval_enable_userdef(const int enable_userdef) {
+   if (eval_user_defined=enable_userdef) {
+      printf("Guile-powered user-defined evaluation function!\n");
+   } else {
+      printf("Built-in evaluation function\n");
+   }
+   return 0;
+}
+
+int eval_builtin(const board_t * board) {
 #else
 int eval(const board_t * board) {
 #endif
@@ -368,153 +355,34 @@ int eval(const board_t * board) {
 
    ASSERT(!value_is_mate(eval));
 
-#ifdef HAVE_GUILE
-   return scm_from_int( eval );
-#else
    return eval;
-#endif
 }
 
 #ifdef HAVE_GUILE
+int eval_get_param( int eval_param_key ) {
+   return (0);
+}
+int eval_set_param( int eval_param_key, int eval_param_value ) {
+   return (0);
+}
+
 int eval(const board_t * board) {
-   material_info_t mat_info[1];
-   pawn_info_t pawn_info[1];
-   int mul[ColourNb];
-
-   SCM func_symbol;
-   SCM func;
-
-   scm_init_guile();
-
-   func_symbol = scm_c_lookup( "eval-guile" );
-   func_eval_guile = scm_variable_ref( func_symbol );
-
-   SCM ret_val;
-   int result=0;
-   ret_val = scm_call_4( func_eval_guile, 
-                            scm_ulong2num( (unsigned long)board ),
-                            scm_ulong2num( (unsigned long)mat_info ),
-                            scm_ulong2num( (unsigned long)pawn_info ),
-                            scm_ulong2num( (unsigned long)mul ) );
-   result = scm_num2int( ret_val, 0, NULL );
-   return result;
+   if ( eval_user_defined ) {
+      return eval_with_params( board );
+   } else {
+      return eval_builtin( board );
+   }
 }
 
-SCM
-eval_builtin1( SCM board_handle ) {
-
-   const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
-
-   int opening, endgame;
-   material_info_t mat_info[1];
-   pawn_info_t pawn_info[1];
-   int mul[ColourNb];
-   int phase;
-   int eval;
-   int wb, bb;
-
-   ASSERT(board!=NULL);
-
-   ASSERT(board_is_legal(board));
-   ASSERT(!board_is_check(board)); // exceptions are extremely rare
-
-   // init
-
-   opening = 0;
-   endgame = 0;
-
-   // material
-
-   material_get_info(mat_info,board);
-
-   opening += mat_info->opening;
-   endgame += mat_info->endgame;
-
-   mul[White] = mat_info->mul[White];
-   mul[Black] = mat_info->mul[Black];
-
-   // PST
-
-   //opening += board->opening;
-   //endgame += board->endgame;
-
-   // pawns
-
-   pawn_get_info(pawn_info,board);
-
-   //opening += pawn_info->opening;
-   //endgame += pawn_info->endgame;
-
-   // draw
-
-   eval_draw(board,mat_info,pawn_info,mul);
-
-   if (mat_info->mul[White] < mul[White]) mul[White] = mat_info->mul[White];
-   if (mat_info->mul[Black] < mul[Black]) mul[Black] = mat_info->mul[Black];
-
-   if (mul[White] == 0 && mul[Black] == 0) return ValueDraw;
-
-   // eval
-
-//   eval_piece(board,mat_info,pawn_info,&opening,&endgame);
-//   eval_king(board,mat_info,&opening,&endgame);
-//   eval_passer(board,pawn_info,&opening,&endgame);
-//   eval_pattern(board,&opening,&endgame);
-
-   // phase mix
-
-   phase = mat_info->phase;
-   eval = ((opening * (256 - phase)) + (endgame * phase)) / 256;
-
-   // drawish bishop endgames
-
-   if ((mat_info->flags & DrawBishopFlag) != 0) {
-
-      wb = board->piece[White][1];
-      ASSERT(PIECE_IS_BISHOP(board->square[wb]));
-
-      bb = board->piece[Black][1];
-      ASSERT(PIECE_IS_BISHOP(board->square[bb]));
-
-      if (SQUARE_COLOUR(wb) != SQUARE_COLOUR(bb)) {
-         if (mul[White] == 16) mul[White] = 8; // 1/2
-         if (mul[Black] == 16) mul[Black] = 8; // 1/2
-      }
-   }
-
-   // draw bound
-
-   if (eval > ValueDraw) {
-      eval = (eval * mul[White]) / 16;
-   } else if (eval < ValueDraw) {
-      eval = (eval * mul[Black]) / 16;
-   }
-
-   // value range
-
-   if (eval < -ValueEvalInf) eval = -ValueEvalInf;
-   if (eval > +ValueEvalInf) eval = +ValueEvalInf;
-
-   ASSERT(eval>=-ValueEvalInf&&eval<=+ValueEvalInf);
-
-   // turn
-
-   if (COLOUR_IS_BLACK(board->turn)) eval = -eval;
-
-   ASSERT(!value_is_mate(eval));
-
-   return scm_from_int( eval );
+static int eval_with_params(const board_t * board) {
+   return 0;
 }
+
 #endif
 
 // eval_draw()
 
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_draw(const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int mul[2]) {
+static void eval_draw(const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int mul[2]) {
 
    int colour;
    int me, opp;
@@ -752,12 +620,7 @@ void eval_draw(const board_t * board, const material_info_t * mat_info, const pa
 
 // eval_piece()
 
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_piece(const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int * opening, int * endgame) {
+static void eval_piece(const board_t * board, const material_info_t * mat_info, const pawn_info_t * pawn_info, int * opening, int * endgame) {
 
    int colour;
    int op[ColourNb], eg[ColourNb];
@@ -971,12 +834,7 @@ void eval_piece(const board_t * board, const material_info_t * mat_info, const p
 
 // eval_king()
 
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_king(const board_t * board, const material_info_t * mat_info, int * opening, int * endgame) {
+static void eval_king(const board_t * board, const material_info_t * mat_info, int * opening, int * endgame) {
 
    int colour;
    int op[ColourNb], eg[ColourNb];
@@ -1115,12 +973,7 @@ void eval_king(const board_t * board, const material_info_t * mat_info, int * op
 
 // eval_passer()
 
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_passer(const board_t * board, const pawn_info_t * pawn_info, int * opening, int * endgame) {
+static void eval_passer(const board_t * board, const pawn_info_t * pawn_info, int * opening, int * endgame) {
 
    int colour;
    int op[ColourNb], eg[ColourNb];
@@ -1205,12 +1058,7 @@ void eval_passer(const board_t * board, const pawn_info_t * pawn_info, int * ope
 
 // eval_pattern()
 
-#ifdef HAVE_GUILE
-extern
-#else
-static 
-#endif
-void eval_pattern(const board_t * board, int * opening, int * endgame) {
+static void eval_pattern(const board_t * board, int * opening, int * endgame) {
 
    ASSERT(board!=NULL);
    ASSERT(opening!=NULL);

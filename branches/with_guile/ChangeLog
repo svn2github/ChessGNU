@@ -1,3 +1,10 @@
+2017-07-27  Antonio Ceballos  <aceballos@gmail.com>
+
+	* src/guile.cc: on init, set up eval function.
+	* src/eval.scm: on init, set up eval function.
+	* src/engine/eval.h: on init, set up eval function.
+	* src/engine/eval.cpp: on init, set up eval function.
+
 2017-07-26  Antonio Ceballos  <aceballos@gmail.com>
 
 	* TODO: 3 stages for a Guile-based user-defined evaluation
