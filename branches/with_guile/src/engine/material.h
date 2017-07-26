@@ -78,6 +78,11 @@ extern void material_alloc    ();
 extern void material_clear    ();
 
 extern void material_get_info (material_info_t * info, const board_t * board);
+#ifdef HAVE_GUILE
+extern void material_get_info_probe (material_info_t * info, const board_t * board, material_info_t * entry);
+extern void material_get_info_store (material_info_t * info, material_info_t * entry);
+extern int material_comp_info_recog(material_info_t * info, const board_t * board);
+#endif
 
 }  // namespace engine
 

@@ -1,8 +1,20 @@
+2017-07-26  Antonio Ceballos  <aceballos@gmail.com>
+
+	* TODO: 3 stages for a Guile-based user-defined evaluation
+	function.
+	* src/guile.cc: add Guile related commands.
+	* src/engine/material.h: add functions for pieces of
+	material evaluation.
+	* src/engine/material.cpp: add functions for pieces of
+	material evaluation.
+
 2017-05-17  Antonio Ceballos  <aceballos@gmail.com>
-	* TODO: update Guile realted tasks.
+
+	* TODO: update Guile related tasks.
 	* src/guile.cc: find eval.scm in PKGDATADIR.
 
 2017-05-15  Antonio Ceballos  <aceballos@gmail.com>
+
 	* TODO: update Guile realted tasks.
 	* src/main.cc: add Guile related comments.
 	* src/guile.cc: add Guile related comments.
@@ -10,6 +22,7 @@
 	* src/engine/eval.cpp: add Guile related comments.
 
 2017-05-15  Antonio Ceballos  <aceballos@gmail.com>
+
 	* src/engine/Makefile.am: compile with HAVE_GUILE.
 
 2015-05-01  Antonio Ceballos  <aceballos@gmail.com>

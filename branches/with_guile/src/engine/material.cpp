@@ -191,6 +191,63 @@ void material_get_info(material_info_t * info, const board_t * board) {
    }
 }
 
+#ifdef HAVE_GUILE
+// components of material_get_info(), used by primitives for Guile
+
+void material_get_info_probe(material_info_t * info, const board_t * board, material_info_t * entry) {
+
+   uint64 key;
+
+   ASSERT(info!=NULL);
+   ASSERT(board!=NULL);
+
+   // probe
+
+   if (UseTable) {
+
+      Material->read_nb++;
+
+      key = board->material_key;
+      entry = &Material->table[KEY_INDEX(key)&Material->mask];
+
+      if (entry->lock == KEY_LOCK(key)) {
+
+         // found
+
+         Material->read_hit++;
+
+         *info = *entry;
+
+         return;
+      }
+
+   }
+}
+
+void material_get_info_store(material_info_t * info, material_info_t * entry) {
+
+   uint64 key;
+
+   ASSERT(info!=NULL);
+
+   // store
+
+   if (UseTable) {
+
+      Material->write_nb++;
+
+      if (entry->lock == 0) { // HACK: assume free entry
+         Material->used++;
+      } else {
+         Material->write_collision++;
+      }
+
+      *entry = *info;
+      entry->lock = KEY_LOCK(key);
+   }
+}
+#endif
+
 // material_comp_info()
 
 static void material_comp_info(material_info_t * info, const board_t * board) {
@@ -692,6 +749,128 @@ static void material_comp_info(material_info_t * info, const board_t * board) {
    info->opening = (opening * MaterialWeight) / 256;
    info->endgame = (endgame * MaterialWeight) / 256;
 }
+
+#ifdef HAVE_GUILE
+// components of material_comp_info
+
+static void material_comp_info_init(material_info_t * info, const board_t * board,
+                                    int *wp, int *wn, int *wb, int *wr, int *wq,
+                                    int *bp, int *bn, int *bb, int *br, int *bq,
+                                    int *wt, int *bt,
+                                    int *wm, int *bm)
+{
+   int colour;
+   int recog;
+   int flags;
+   int cflags[ColourNb];
+   int mul[ColourNb];
+   int phase;
+   int opening, endgame;
+
+   ASSERT(info!=NULL);
+   ASSERT(board!=NULL);
+
+   // init
+
+   *wp = board->number[WhitePawn12];
+   *wn = board->number[WhiteKnight12];
+   *wb = board->number[WhiteBishop12];
+   *wr = board->number[WhiteRook12];
+   *wq = board->number[WhiteQueen12];
+
+   *bp = board->number[BlackPawn12];
+   *bn = board->number[BlackKnight12];
+   *bb = board->number[BlackBishop12];
+   *br = board->number[BlackRook12];
+   *bq = board->number[BlackQueen12];
+
+   *wt = *wq + *wr + *wb + *wn + *wp; // no king
+   *bt = *bq + *br + *bb + *bn + *bp; // no king
+
+   *wm = *wb + *wn;
+   *bm = *bb + *bn;
+}
+
+int material_comp_info_recog(material_info_t * info, const board_t * board)
+{
+   int wp, wn, wb, wr, wq;
+   int bp, bn, bb, br, bq;
+   int wt, bt;
+   int wm, bm;
+   int recog;
+
+   // init
+
+   material_comp_info_init(info, board,
+       &wp, &wn, &wb, &wr, &wq,
+       &bp, &bn, &bb, &br, &bq,
+       &wt, &bt,
+       &wm, &bm);
+
+   // recogniser
+
+   recog = MAT_NONE;
+
+   if (false) {
+
+   } else if (wt == 0 && bt == 0) {
+
+      recog = MAT_KK;
+
+   } else if (wt == 1 && bt == 0) {
+
+      if (wb == 1) recog = MAT_KBK;
+      if (wn == 1) recog = MAT_KNK;
+      if (wp == 1) recog = MAT_KPK;
+
+   } else if (wt == 0 && bt == 1) {
+
+      if (bb == 1) recog = MAT_KKB;
+      if (bn == 1) recog = MAT_KKN;
+      if (bp == 1) recog = MAT_KKP;
+
+   } else if (wt == 1 && bt == 1) {
+
+      if (wq == 1 && bq == 1) recog = MAT_KQKQ;
+      if (wq == 1 && bp == 1) recog = MAT_KQKP;
+      if (wp == 1 && bq == 1) recog = MAT_KPKQ;
+
+      if (wr == 1 && br == 1) recog = MAT_KRKR;
+      if (wr == 1 && bp == 1) recog = MAT_KRKP;
+      if (wp == 1 && br == 1) recog = MAT_KPKR;
+
+      if (wb == 1 && bb == 1) recog = MAT_KBKB;
+      if (wb == 1 && bp == 1) recog = MAT_KBKP;
+      if (wp == 1 && bb == 1) recog = MAT_KPKB;
+
+      if (wn == 1 && bn == 1) recog = MAT_KNKN;
+      if (wn == 1 && bp == 1) recog = MAT_KNKP;
+      if (wp == 1 && bn == 1) recog = MAT_KPKN;
+
+   } else if (wt == 2 && bt == 0) {
+
+      if (wb == 1 && wp == 1) recog = MAT_KBPK;
+      if (wn == 1 && wp == 1) recog = MAT_KNPK;
+
+   } else if (wt == 0 && bt == 2) {
+
+      if (bb == 1 && bp == 1) recog = MAT_KKBP;
+      if (bn == 1 && bp == 1) recog = MAT_KKNP;
+
+   } else if (wt == 2 && bt == 1) {
+
+      if (wr == 1 && wp == 1 && br == 1) recog = MAT_KRPKR;
+      if (wb == 1 && wp == 1 && bb == 1) recog = MAT_KBPKB;
+
+   } else if (wt == 1 && bt == 2) {
+
+      if (wr == 1 && br == 1 && bp == 1) recog = MAT_KRKRP;
+      if (wb == 1 && bb == 1 && bp == 1) recog = MAT_KBKBP;
+   }
+
+   return recog;
+}
+#endif
 
 }  // namespace engine
 

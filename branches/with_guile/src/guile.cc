@@ -45,6 +45,12 @@ char const *compute_pkgdatadir()
 // C++ primitives for Scheme
 // Suitable for the function calls in eval_builtin()
 
+SCM c_set_eval_param(SCM param_key, SCM param_value)
+{
+    // TODO
+    return scm_int2num( 0 );
+}
+
 SCM c_material_get_info( SCM board_handle, SCM mat_handle )
 {
     const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
@@ -278,6 +284,113 @@ SCM c_is_colour_turn_black( SCM board_handle )
 
 // C++ primitives for Scheme
 // Atomic primitives, suitable for a user-defined eval-guile-scm
+
+// Primitives to build material_get_info()
+//
+// void material_get_info(material_info_t * info, const board_t * board) {
+//     IO: info
+//     IO: board
+//     probe
+//         IO: info
+//         I: board
+//         O: entry
+//     computation
+//         IO: info
+//         IO: board
+//     store
+//         I: info
+//         I: entry
+//
+// All calls to c_material_comp_info_* must be embraced by:
+//   - a call to c_material_get_info_probe at the beginning
+//   - a call to c_material_get_info_store at the end
+
+SCM c_material_get_info_probe( SCM board_handle, SCM mat_handle, SCM entry_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    material_info_t * mat_info = (material_info_t *)scm_num2ulong( mat_handle, 0, NULL );
+    material_info_t * entry = (material_info_t *)scm_num2ulong( entry_handle, 0, NULL );
+    material_get_info_probe( mat_info, board, entry );
+    return scm_int2num( 0 );
+}
+
+SCM c_material_get_info_store( SCM mat_handle, SCM entry_handle )
+{
+    typedef material_info_t entry_t;
+    material_info_t * mat_info = (material_info_t *)scm_num2ulong( mat_handle, 0, NULL );
+    material_info_t * entry = (material_info_t *)scm_num2ulong( entry_handle, 0, NULL );
+    material_get_info_store( mat_info, entry );
+    return scm_int2num( 0 );
+}
+
+// Primitives to build material_comp_info()
+//
+// void material_comp_info(material_info_t * info, const board_t * board) {
+//     IO: info
+//     IO: board
+//     init
+//         I: info, board
+//         O: wp, wn, wb, wr, wq
+//         O: bp, bn, bb, br, bq
+//         O: Wt, wm
+//         O: bt, bm
+//     recog
+//         I: w*, b*
+//         return: recog
+//     draw node (exact-draw recogniser)
+//         I: w*, b*, recog
+//         O: flags
+//     bishop endgame
+//         I: w*, b*
+//         IO: flags
+//     multipliers
+//         O: mul[]
+//     white multiplier
+//         I: w*, b*
+//         O: mul[]
+//     black multiplier
+//         I: w*, b*
+//         O: mul[]
+//     potential draw for white
+//         I: w*, b*
+//         I: Constants
+//         O: cflags[]
+//     potential draw for black
+//         I: w*, b*
+//         I: Constants
+//         O: cflags[]
+//     draw leaf (likely draw)
+//         I: recog
+//         O: mul[]
+//     king safety
+//         I: w*, b*
+//         I: Constants
+//         O: mul[]
+//     phase (0: opening -> 256: endgame)
+//         I: w*, b*
+//         I: Constants
+//         O: phase
+//     material
+//         I: w*, b*
+//         I: Constants
+//         O: opening, endgame
+//     bishop pair
+//         I: w*, b*
+//         I: Constants
+//         IO: opening, endgame
+//     store info
+//         I: recog, flags, cflags[], mul[], phase, opening, endgame
+//         I: Constants
+//         O: info
+
+
+SCM c_material_comp_info_recog( SCM board_handle, SCM mat_handle )
+{
+    const board_t * board = (board_t *)scm_num2ulong( board_handle, 0, NULL );
+    material_info_t * mat_info = (material_info_t *)scm_num2ulong( mat_handle, 0, NULL );
+    int recog = material_comp_info_recog( mat_info, board );
+    return scm_int2num( recog );
+}
 
 // Initialize Guile and define primitives
 void init_chess_guile(void)

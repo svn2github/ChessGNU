@@ -31,5 +31,27 @@ Next steps:
 * Split eval_builtin into small primitives available from Guile, such that
 the weight is assigned in Scheme, not in C++.
 * Split material_get_info and material_comp_info into primitives.
-* Add a primitive that returns the board position in una of the standard formats, e.g. FEN. This would be suitable for an arbitrary Scheme evaluation function.
+* Add a primitive that returns the board position in one of the standard formats, e.g. FEN. This would be suitable for an arbitrary Scheme evaluation function.
 * Genetic algorithms.
+
+Stages for a user-defined evaluation function based on Guile:
+1. Parameterized evaluation function. Evaluation function with exactly the same structure as the built-in evaluation function.
+  Eval function:
+    Written in C++, not in Scheme.
+    All weights must be variables instead of constants.
+  Scheme primitives:
+    A couple of primitives to get and set the parameters of the evaluation function.
+    A way to select either the parameterized or the built-in evaluation function.
+2. User-defined evaluation function with primitives to evaluate atomic evauable things.
+  Eval function:
+    Written in Scheme.
+    Following the same structure as the built-in evaluation function.
+  Scheme primitives:
+    A primitive for each evauable thing: material, patterns, etc.
+3. Arbitrary user-defined evaluation function.
+  Eval function:
+    Written in Scheme.
+    Arbitrary structure.
+  Scheme primitives:
+    Current game position in FEN, PGN or other notation method.
+
